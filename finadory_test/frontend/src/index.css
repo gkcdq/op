@@ -1,0 +1,27 @@
+:root {
+  --bg: #000000;
+  --panel: #0c0c0c;
+  --line: #262626;
+  --amber: #fb8b1e;
+  --text: #e8e8e8;
+  --dim: #8c8c8c;
+  --up: #00d26a;
+  --down: #ff4040;
+  --blue: #4da3ff;
+
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --sans: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+#root { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
