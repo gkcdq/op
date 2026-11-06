@@ -1,6 +1,5 @@
 import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
-import { PublicationsService } from './publications/publications.service';
-import { PertinenceService } from './script/api/datagouv/pertinence';
+import { PertinenceService } from './script/datagouv/pertinence';
 
 function toInt(value: string | undefined, name: string): number | undefined
 {
@@ -15,31 +14,12 @@ function toInt(value: string | undefined, name: string): number | undefined
 @Controller()
 export class AppController
 {
-  constructor(private readonly publications: PublicationsService,private readonly pertinence: PertinenceService,) {}
+  constructor(private readonly pertinence: PertinenceService,) {}
 
   @Get()
   health()
   {
     return { status: 'ok' };
-  }
-
-  @Get('publications')
-  list(@Query('issuer') issuer?: string,@Query('subtype') subtype?: string,@Query('from') from?: string,@Query('to') to?: string,@Query('limit') limit?: string,@Query('offset') offset?: string,)
-  {
-    return this.publications.list({
-      issuer,
-      subtype,
-      from,
-      to,
-      limit: toInt(limit, 'limit'),
-      offset: toInt(offset, 'offset'),
-    });
-  }
-
-  @Get('publications/subtypes')
-  subtypes()
-  {
-    return this.publications.subtypes();
   }
 
   // @Get('pertinence')

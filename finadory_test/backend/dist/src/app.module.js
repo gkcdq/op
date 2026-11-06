@@ -10,9 +10,8 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const app_controller_1 = require("./app.controller");
 const prisma_module_1 = require("../prisma/prisma.module");
-const publications_service_1 = require("./publications/publications.service");
-const pertinence_1 = require("./script/api/datagouv/pertinence");
-const ingest_1 = require("./script/api/datagouv/ingest");
+const pertinence_1 = require("./script/datagouv/pertinence");
+const articulateStart_1 = require("./script/articulateStart");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -20,7 +19,7 @@ exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [prisma_module_1.PrismaModule],
         controllers: [app_controller_1.AppController],
-        providers: [publications_service_1.PublicationsService, pertinence_1.PertinenceService, ingest_1.DatagouvIngestService],
+        providers: [pertinence_1.PertinenceService, articulateStart_1.DatagouvIngestService],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map
