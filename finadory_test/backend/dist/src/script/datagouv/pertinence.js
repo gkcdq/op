@@ -34,7 +34,7 @@ const MOTS_CLES = [
     { motif: /acquisition|cession|offre publique|tender offer|fusion|merger/i, points: 25, raison: 'rachat, fusion ou offre' },
     { motif: /dividendes?|dividends?/i, points: 15, raison: 'dividende' },
     { motif: /objectifs?|guidance|pr[ée]visions?|outlook/i, points: 15, raison: 'prévisions' },
-    { motif: /mise [àa] disposition|made available/i, points: -30, raison: 'simple avis de mise à disposition' },
+    { motif: /mise (?:à|a) disposition|made available/i, points: -30, raison: 'simple avis de mise à disposition' },
 ];
 const MOTIF_MONTANT = /\d[\d\s.,]*\s?(%|M€|M EUR|millions?|milliards?|€|EUR)/i;
 function calculerPoints(pub) {

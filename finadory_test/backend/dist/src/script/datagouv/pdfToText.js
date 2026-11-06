@@ -101,7 +101,9 @@ function normaliser(s) {
 function nettoyerPourLlm(page) {
     return normaliser(page)
         .split('\n')
-        .map((l) => l.trim().replace(/ {3,}/g, ' | '))
+        .map((l) => l.trim()
+        .replace(/^[•]\s*\|?\s*/g, '• ')
+        .replace(/ {3,}/g, ' | '))
         .join('\n')
         .replace(/[ \t]{2,}/g, ' ')
         .replace(/\n{3,}/g, '\n\n')

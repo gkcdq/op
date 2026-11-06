@@ -1,9 +1,9 @@
-import { PertinenceService } from './script/datagouv/pertinence';
+import { DatagouvIngestService } from './script/datagouv/Datagouv.service.ts.js';
+import { ScriptCache } from './script/scriptCache.js';
 export declare class AppController {
-    private readonly pertinence;
-    constructor(pertinence: PertinenceService);
-    health(): {
-        status: string;
-    };
-    top(): import("./script/datagouv/pertinence").PublicationNotee[];
+    private readonly datagouv;
+    private readonly scriptCache;
+    constructor(datagouv: DatagouvIngestService, scriptCache: ScriptCache);
+    top(): import("./script/datagouv/pertinence.js").PublicationNotee[];
+    brief(): any[];
 }

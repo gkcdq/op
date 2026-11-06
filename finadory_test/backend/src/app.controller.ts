@@ -1,38 +1,31 @@
 import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
-//import { PertinenceService } from './script/datagouv/pertinence';
-import { DatagouvIngestService } from './script/articulateStart';
+import { DatagouvIngestService } from './script/datagouv/Datagouv.service.ts.js';
+import { ScriptCache } from './script/scriptCache.js';
 
-function toInt(value: string | undefined, name: string): number | undefined
-{
-  if (value === undefined || value === '')
-    return undefined;
-  const n = Number(value);
-  if (!Number.isInteger(n))
-    throw new BadRequestException(`"${name}" doit être un entier`);
-  return n;
-}
+// function toInt(value: string | undefined, name: string): number | undefined
+// {
+//   if (value === undefined || value === '')
+//     return undefined;
+//   const n = Number(value);
+//   if (!Number.isInteger(n))
+//     throw new BadRequestException(`"${name}" doit être un entier`);
+//   return n;
+// }
 
 @Controller()
 export class AppController
 {
-  constructor(private readonly datagouv: DatagouvIngestService) {}
-
-  @Get()
-  health()
-  {
-    return { status: 'ok' };
-  }
-
-  // @Get('pertinence')
-  // async classement()
-  // {
-  //   const liste = await this.pertinence.classement();
-  //   return liste.slice(0, 20);
-  // }
+  constructor(private readonly datagouv: DatagouvIngestService, private readonly scriptCache: ScriptCache) {}
 
   @Get('top')
   top()
   {
     return this.datagouv.top5publicationsTab;
+  }
+
+  @Get('brief')
+  brief()
+  {
+    return this.scriptCache.getBriefs();
   }
 }

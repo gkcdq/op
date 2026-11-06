@@ -10,7 +10,7 @@ const DOMAINE_AUTORISE = 'fr.ftp.opendatasoft.com';
 const TAILLE_MAX = 10 * 1024 * 1024;
 const DELAI_MS = 20_000;
 const TEXTE_MIN = 200;
-const TEXTE_MAX = 1_500;
+const TEXTE_MAX = 3_000;
 
 export interface TextePdf
 {

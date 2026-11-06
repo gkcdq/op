@@ -25,7 +25,7 @@ const MOTS_CLES: { motif: RegExp; points: number; raison: string }[] = [
     { motif: /acquisition|cession|offre publique|tender offer|fusion|merger/i, points: 25, raison: 'rachat, fusion ou offre' },
     { motif: /dividendes?|dividends?/i, points: 15, raison: 'dividende' },
     { motif: /objectifs?|guidance|pr[ée]visions?|outlook/i, points: 15, raison: 'prévisions' },
-    { motif: /mise [àa] disposition|made available/i, points: -30, raison: 'simple avis de mise à disposition' },
+    { motif: /mise (?:à|a) disposition|made available/i, points: -30, raison: 'simple avis de mise à disposition' },
 ];
 
 const MOTIF_MONTANT = /\d[\d\s.,]*\s?(%|M€|M EUR|millions?|milliards?|€|EUR)/i;
@@ -79,26 +79,23 @@ export interface PublicationNotee
 @Injectable()
 export class PertinenceService
 {
+    // Injection propre : on ne dépend QUE de Prisma
     constructor(private readonly prisma: PrismaService) {}
 
-    private dernierTop: { calculeLe: Date | null; top: PublicationNotee[] } =
-        { calculeLe: null, top: [] };
+    private dernierTop: { calculeLe: Date | null; top: PublicationNotee[] } = { calculeLe: null, top: [] };
 
-    async actualiser(nombre = 5)
-    {
+    async actualiser(nombre = 5) {
         const liste = await this.classement();
         const top = liste.slice(0, nombre);
         this.dernierTop = { calculeLe: new Date(), top };
         return top;
     }
 
-    getTop(): PublicationNotee[]
-    {
+    getTop(): PublicationNotee[] {
         return this.dernierTop.top;
     }
 
-    async classement(jours = 3): Promise<PublicationNotee[]>
-    {
+    async classement(jours = 3): Promise<PublicationNotee[]> {
         const publications = await this.lirePublications(jours);
         const candidates = this.retirerLesInutiles(publications);
         const notees = this.noter(candidates);
@@ -106,8 +103,7 @@ export class PertinenceService
         return this.unSeulParSociete(notees);
     }
 
-    private lirePublications(jours: number): Promise<Publication[]>
-    {
+    private lirePublications(jours: number): Promise<Publication[]> {
         const debut = new Date(Date.now() - jours * 86_400_000);
         return this.prisma.publication.findMany({
             where: { publishedAt: { gte: debut } },
@@ -115,8 +111,7 @@ export class PertinenceService
         });
     }
 
-    private retirerLesInutiles(publications: Publication[]): Publication[]
-    {
+    private retirerLesInutiles(publications: Publication[]): Publication[] {
         const DECLARATION_RACHAT = /actions propres|programme de rachat|share buyback|treasury shares/i;
         const maintenant = new Date();
         return publications.filter((p) =>
@@ -128,8 +123,7 @@ export class PertinenceService
         );
     }
 
-    private noter(publications: Publication[]): PublicationNotee[]
-    {
+    private noter(publications: Publication[]): PublicationNotee[] {
         return publications.map((p) => ({
             id: p.id,
             societe: p.issuer,
@@ -142,8 +136,7 @@ export class PertinenceService
         }));
     }
 
-    private trier(notees: PublicationNotee[]): void
-    {
+    private trier(notees: PublicationNotee[]): void {
         notees.sort((a, b) =>
             b.points - a.points ||
             Number(b.francais) - Number(a.francais) ||
@@ -151,14 +144,11 @@ export class PertinenceService
         );
     }
 
-    private unSeulParSociete(notees: PublicationNotee[]): PublicationNotee[]
-    {
+    private unSeulParSociete(notees: PublicationNotee[]): PublicationNotee[] {
         const dejaVues = new Set<string>();
-        return notees.filter((p) =>
-        {
+        return notees.filter((p) => {
             const societe = p.societe ?? p.id;
-            if (dejaVues.has(societe))
-                return false;
+            if (dejaVues.has(societe)) return false;
             dejaVues.add(societe);
             return true;
         });
