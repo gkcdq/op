@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { fetchPeriod } from '../api/datagouv/infoFinanciere'; 
-import { PertinenceService } from './datagouv/pertinence'; 
+import { PertinenceService, PublicationNotee } from './datagouv/pertinence'; // Ajout de PublicationNotee
 
 const DAYS = 3;                
 const BATCH_SIZE = 500;          
@@ -15,13 +15,15 @@ export class DatagouvIngestService implements OnApplicationBootstrap, OnModuleDe
     private timer?: NodeJS.Timeout;
     private cycleEnCours = false;
 
-    constructor(private readonly prisma: PrismaService,private readonly pertinence: PertinenceService,) {}
+    public top5publicationsTab: PublicationNotee[] = [];
+
+    constructor(private readonly prisma: PrismaService,private readonly pertinence: PertinenceService, ) {}
 
     onApplicationBootstrap()
     {
         if (process.env.SCRIPT_DATAGOUVE_INFOFINANCIERE != "true")
             return;
-        this.cycle();
+        this.cycle();         
         this.timer = setInterval(() => this.cycle(), INTERVAL_MS);
     }
 
@@ -43,7 +45,7 @@ export class DatagouvIngestService implements OnApplicationBootstrap, OnModuleDe
         try
         {
             await this.executerIngestion();
-            await this.executerClassement();
+            await this.executerClassement(); 
         }
         finally
         {
@@ -67,7 +69,12 @@ export class DatagouvIngestService implements OnApplicationBootstrap, OnModuleDe
     {
         try
         {
+            // await garantit que le classement est terminé
             const top = await this.pertinence.actualiser(TOP_SIZE);
+            
+            // 3. On met à jour le cache SEULEMENT une fois que actualiser() a fini
+            this.top5publicationsTab = top;
+
             this.logger.log(`Top ${top.length} :`);
             for (const p of top)
                 this.logger.log(`  ${p.points} pts | ${p.societe} | ${p.titre}`);

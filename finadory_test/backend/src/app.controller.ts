@@ -1,5 +1,6 @@
 import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
-import { PertinenceService } from './script/datagouv/pertinence';
+//import { PertinenceService } from './script/datagouv/pertinence';
+import { DatagouvIngestService } from './script/articulateStart';
 
 function toInt(value: string | undefined, name: string): number | undefined
 {
@@ -14,7 +15,7 @@ function toInt(value: string | undefined, name: string): number | undefined
 @Controller()
 export class AppController
 {
-  constructor(private readonly pertinence: PertinenceService,) {}
+  constructor(private readonly datagouv: DatagouvIngestService) {}
 
   @Get()
   health()
@@ -32,6 +33,6 @@ export class AppController
   @Get('top')
   top()
   {
-    return this.pertinence.getTop();
+    return this.datagouv.top5publicationsTab;
   }
 }
