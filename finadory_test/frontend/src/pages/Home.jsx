@@ -52,6 +52,26 @@ export default function Home() {
     }
   }, [search])
 
+  // Écoute le bouton "Précédent" du navigateur
+  useEffect(() => {
+    const handlePopState = () => {
+      setSelectedBrief(null);
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  // AJOUT 1 : Fonction pour ouvrir la brève et ajouter l'URL
+  const openBrief = (brief) => {
+    setSelectedBrief(brief)
+    window.history.pushState({ briefId: brief.id }, '', `#brief-${brief.id}`)
+  }
+
+  // AJOUT 2 : Fonction pour le bouton retour
+  const closeBrief = () => {
+    window.history.back()
+  }
+
   return (
     <>
       <AnimatePresence>
@@ -94,7 +114,8 @@ export default function Home() {
         ) : (
           <AnimatePresence mode="wait">
             {selectedBrief ? (
-              <BriefDetail brief={selectedBrief} onBack={() => setSelectedBrief(null)} />
+              // Utilise closeBrief ici
+              <BriefDetail brief={selectedBrief} onBack={closeBrief} />
             ) : (
               <motion.div 
                 key="grid"
@@ -108,7 +129,7 @@ export default function Home() {
                   <BriefCard 
                     key={b.id} 
                     brief={b} 
-                    onClick={() => setSelectedBrief(b)} 
+                    onClick={() => openBrief(b)} 
                     variants={cardVariants} 
                   />
                 ))}

@@ -20,7 +20,7 @@ const scriptCache_1 = require("../scriptCache");
 const DAYS = 3;
 const BATCH_SIZE = 500;
 const INTERVAL_MS = 30 * 60_000;
-const TOP_SIZE = 5;
+const TOP_SIZE = 9;
 let DatagouvIngestService = DatagouvIngestService_1 = class DatagouvIngestService {
     prisma;
     pertinence;

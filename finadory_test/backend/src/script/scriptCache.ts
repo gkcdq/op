@@ -29,7 +29,7 @@ export class ScriptCache implements OnApplicationBootstrap
                 orderBy: {
                     publishedAt: 'desc'
                 },
-                take: 5
+                take: 9
             });
             
             this.brief = dernieresBreves;

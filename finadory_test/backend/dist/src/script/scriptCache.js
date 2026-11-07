@@ -34,7 +34,7 @@ let ScriptCache = ScriptCache_1 = class ScriptCache {
                 orderBy: {
                     publishedAt: 'desc'
                 },
-                take: 5
+                take: 9
             });
             this.brief = dernieresBreves;
             this.logger.log(`Cache mis à jour avec ${this.brief.length} brèves.`);

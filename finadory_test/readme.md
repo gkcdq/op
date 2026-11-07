@@ -173,6 +173,7 @@ Des chronomètres ont été ajoutés dans le service `BriefService` pour mesurer
 - **Déploiement** : Déployer la base de données sur un serveur local conteneurisé sur Docker. *(J'aurais pu le faire sur un vrai projet, mais pour un exercice, Supabase ou Neon sont très bien).*
 - **Domaine** : Acheter un nom de domaine cohérent avec le site (ex: bergdot.com).
 - **Scalabilité** : Si le trafic augmente, augmenter le temps entre les requêtes du frontend à 2 minutes. Comme les données sont peu souvent rafraîchies, un polling de 1 minute est très agressif pour le serveur.
+- **stocker les logos** : Stocker dans la db les liens des logos c'est tres tres peu couteux en stockage et ca economise les call api.
 
 ---
 

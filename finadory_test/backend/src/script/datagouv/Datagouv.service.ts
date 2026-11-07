@@ -8,7 +8,7 @@ import { ScriptCache } from '../scriptCache';
 const DAYS = 3;                
 const BATCH_SIZE = 500;          
 const INTERVAL_MS = 30 * 60_000; 
-const TOP_SIZE = 5;            
+const TOP_SIZE = 9;            
 
 @Injectable()
 export class DatagouvIngestService implements OnApplicationBootstrap, OnModuleDestroy
