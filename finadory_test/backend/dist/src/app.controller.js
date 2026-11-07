@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppController = void 0;
 const common_1 = require("@nestjs/common");
-const Datagouv_service_ts_js_1 = require("./script/datagouv/Datagouv.service.ts.js");
+const Datagouv_service_1 = require("./script/datagouv/Datagouv.service");
 const scriptCache_js_1 = require("./script/scriptCache.js");
 let AppController = class AppController {
     datagouv;
@@ -42,6 +42,6 @@ __decorate([
 ], AppController.prototype, "brief", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
-    __metadata("design:paramtypes", [Datagouv_service_ts_js_1.DatagouvIngestService, scriptCache_js_1.ScriptCache])
+    __metadata("design:paramtypes", [Datagouv_service_1.DatagouvIngestService, scriptCache_js_1.ScriptCache])
 ], AppController);
 //# sourceMappingURL=app.controller.js.map

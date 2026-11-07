@@ -10,21 +10,25 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const app_controller_1 = require("./app.controller");
 const prisma_module_1 = require("../prisma/prisma.module");
+const schedule_1 = require("@nestjs/schedule");
 const pertinence_1 = require("./script/datagouv/pertinence");
-const Datagouv_service_ts_1 = require("./script/datagouv/Datagouv.service.ts");
-const brief_service_1 = require("./script/datagouv/brief.service");
+const Datagouv_service_1 = require("./script/datagouv/Datagouv.service");
+const briefAgent_1 = require("./api/ia/briefAgent");
 const scriptCache_1 = require("./script/scriptCache");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
+        imports: [
+            prisma_module_1.PrismaModule,
+            schedule_1.ScheduleModule.forRoot()
+        ],
         controllers: [app_controller_1.AppController],
         providers: [
             pertinence_1.PertinenceService,
-            Datagouv_service_ts_1.DatagouvIngestService,
-            brief_service_1.BriefService,
+            Datagouv_service_1.DatagouvIngestService,
+            briefAgent_1.BriefService,
             scriptCache_1.ScriptCache,
         ],
     })

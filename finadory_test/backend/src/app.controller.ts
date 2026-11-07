@@ -1,5 +1,5 @@
-import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
-import { DatagouvIngestService } from './script/datagouv/Datagouv.service.ts.js';
+import {Controller, Get, Query } from '@nestjs/common';
+import { DatagouvIngestService } from './script/datagouv/Datagouv.service';
 import { ScriptCache } from './script/scriptCache.js';
 
 // function toInt(value: string | undefined, name: string): number | undefined

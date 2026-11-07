@@ -55,10 +55,12 @@ export class BriefService
 
         this.logger.log(`Appel du LLM Mistral pour ${pub.societe}...`);
         
+        // MODIFICATION 1 : Ajout de "societe" dans le format JSON attendu
         const prompt = `Tu es un journaliste financier. À partir du texte ci-dessous, rédige une brève de 100 à 150 mots en français.
 
         Attention, tu dois impérativement respecter ce format JSON, sans rien ajouter d'autre :
         {
+            "societe": "${pub.societe || 'Inconnue'}",
             "titre": "Un titre percutant",
             "breve": "Le texte de la brève...",
             "chiffres_cles": ["11,3%", "492,8 M€", "9,2%"]
@@ -80,6 +82,11 @@ export class BriefService
 
             const content = chatResponse.choices[0].message.content;
             const json = typeof content === 'string' ? JSON.parse(content) : content;
+
+            // MODIFICATION 2 : Sécurité au cas où le LLM oublie de mettre la société
+            if (!json.societe) {
+                json.societe = pub.societe;
+            }
 
             const texteVerifNettoye = nettoyerChiffre(pdf.texteVerification);
             let status = 'OK';

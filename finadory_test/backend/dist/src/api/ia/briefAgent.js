@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var BriefService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BriefService = void 0;
-const pdfToText_1 = require("./pdfToText");
+const pdfToText_1 = require("../../script/datagouv/pdfToText");
 const mistralai_1 = require("@mistralai/mistralai");
 require("dotenv/config");
 const prisma_service_1 = require("../../../prisma/prisma.service");
@@ -60,6 +60,7 @@ let BriefService = BriefService_1 = class BriefService {
 
         Attention, tu dois impérativement respecter ce format JSON, sans rien ajouter d'autre :
         {
+            "societe": "${pub.societe || 'Inconnue'}",
             "titre": "Un titre percutant",
             "breve": "Le texte de la brève...",
             "chiffres_cles": ["11,3%", "492,8 M€", "9,2%"]
@@ -79,6 +80,9 @@ let BriefService = BriefService_1 = class BriefService {
             });
             const content = chatResponse.choices[0].message.content;
             const json = typeof content === 'string' ? JSON.parse(content) : content;
+            if (!json.societe) {
+                json.societe = pub.societe;
+            }
             const texteVerifNettoye = nettoyerChiffre(pdf.texteVerification);
             let status = 'OK';
             let erreurLog = null;
@@ -134,4 +138,4 @@ exports.BriefService = BriefService = BriefService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], BriefService);
-//# sourceMappingURL=brief.service.js.map
+//# sourceMappingURL=briefAgent.js.map

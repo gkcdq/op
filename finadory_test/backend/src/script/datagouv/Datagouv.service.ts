@@ -3,6 +3,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { fetchPeriod } from '../../api/datagouv/infoFinanciere'; 
 import { PertinenceService, PublicationNotee } from './pertinence'; 
 import { BriefService } from '../../api/ia/briefAgent';
+import { ScriptCache } from '../scriptCache';
 
 const DAYS = 3;                
 const BATCH_SIZE = 500;          
@@ -18,7 +19,10 @@ export class DatagouvIngestService implements OnApplicationBootstrap, OnModuleDe
 
     public top5publicationsTab: PublicationNotee[] = [];
 
-    constructor(private readonly prisma: PrismaService,private readonly pertinence: PertinenceService, private readonly briefService: BriefService) {}
+    constructor(private readonly prisma: PrismaService,
+        private readonly pertinence: PertinenceService, 
+        private readonly briefService: BriefService,
+        private readonly scriptCache: ScriptCache,) {}
 
     onApplicationBootstrap()
     {
@@ -66,8 +70,10 @@ export class DatagouvIngestService implements OnApplicationBootstrap, OnModuleDe
         }
     }
 
-    private async executerClassement() {
-        try {
+    private async executerClassement()
+    {
+        try
+        {
             const top = await this.pertinence.actualiser(TOP_SIZE);
             this.top5publicationsTab = top; 
 
@@ -78,7 +84,10 @@ export class DatagouvIngestService implements OnApplicationBootstrap, OnModuleDe
 
                 await this.briefService.genererBrief(p); 
             }
-        } catch (error) {
+            await this.scriptCache.refreshCache();
+        }
+        catch (error)
+        {
             this.logger.error(`Classement échoué : ${error}`);
         }
     }

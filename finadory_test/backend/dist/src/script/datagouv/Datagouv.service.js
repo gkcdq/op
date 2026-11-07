@@ -15,7 +15,8 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../../prisma/prisma.service");
 const infoFinanciere_1 = require("../../api/datagouv/infoFinanciere");
 const pertinence_1 = require("./pertinence");
-const brief_service_1 = require("./brief.service");
+const briefAgent_1 = require("../../api/ia/briefAgent");
+const scriptCache_1 = require("../scriptCache");
 const DAYS = 3;
 const BATCH_SIZE = 500;
 const INTERVAL_MS = 30 * 60_000;
@@ -24,14 +25,16 @@ let DatagouvIngestService = DatagouvIngestService_1 = class DatagouvIngestServic
     prisma;
     pertinence;
     briefService;
+    scriptCache;
     logger = new common_1.Logger(DatagouvIngestService_1.name);
     timer;
     cycleEnCours = false;
     top5publicationsTab = [];
-    constructor(prisma, pertinence, briefService) {
+    constructor(prisma, pertinence, briefService, scriptCache) {
         this.prisma = prisma;
         this.pertinence = pertinence;
         this.briefService = briefService;
+        this.scriptCache = scriptCache;
     }
     onApplicationBootstrap() {
         if (process.env.SCRIPT_DATAGOUVE_INFOFINANCIERE != "true")
@@ -74,6 +77,7 @@ let DatagouvIngestService = DatagouvIngestService_1 = class DatagouvIngestServic
                 this.logger.log(`  ${p.points} pts | ${p.societe} | ${p.titre}`);
                 await this.briefService.genererBrief(p);
             }
+            await this.scriptCache.refreshCache();
         }
         catch (error) {
             this.logger.error(`Classement échoué : ${error}`);
@@ -100,6 +104,9 @@ let DatagouvIngestService = DatagouvIngestService_1 = class DatagouvIngestServic
 exports.DatagouvIngestService = DatagouvIngestService;
 exports.DatagouvIngestService = DatagouvIngestService = DatagouvIngestService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService, pertinence_1.PertinenceService, brief_service_1.BriefService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        pertinence_1.PertinenceService,
+        briefAgent_1.BriefService,
+        scriptCache_1.ScriptCache])
 ], DatagouvIngestService);
-//# sourceMappingURL=Datagouv.service.ts.js.map
+//# sourceMappingURL=Datagouv.service.js.map
