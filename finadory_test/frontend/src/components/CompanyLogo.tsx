@@ -17,7 +17,6 @@ export function toSearchName(name = '') {
     .trim()
 }
 
-// 1. On ajoute le type de retour de la fonction
 function getInitials(name = ''): string {
   const words = toSearchName(name).split(' ').filter(Boolean)
   if (words.length === 0) return '?'
@@ -25,13 +24,11 @@ function getInitials(name = ''): string {
   return (words[0][0] + words[1][0]).toUpperCase()
 }
 
-// 2. On définit l'interface des props du composant
 interface CompanyLogoProps {
-  societe: string | null; // La société peut être null selon ton backend
-  size?: number;          // La taille est optionnelle
+  societe: string | null; 
+  size?: number;         
 }
 
-// 3. On applique l'interface au composant
 export default function CompanyLogo({ societe, size = 32 }: CompanyLogoProps) {
   const [failed, setFailed] = useState(false)
   const query = toSearchName(societe || '')

@@ -66,6 +66,7 @@ exports.PublicationScalarFieldEnum = {
     title: 'title',
     publishedAt: 'publishedAt',
     url: 'url',
+    logourl: 'logourl',
     createdAt: 'createdAt'
 };
 exports.LlmVerificationScalarFieldEnum = {

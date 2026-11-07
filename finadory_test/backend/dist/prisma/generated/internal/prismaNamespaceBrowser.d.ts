@@ -34,6 +34,7 @@ export declare const PublicationScalarFieldEnum: {
     readonly title: "title";
     readonly publishedAt: "publishedAt";
     readonly url: "url";
+    readonly logourl: "logourl";
     readonly createdAt: "createdAt";
 };
 export type PublicationScalarFieldEnum = (typeof PublicationScalarFieldEnum)[keyof typeof PublicationScalarFieldEnum];

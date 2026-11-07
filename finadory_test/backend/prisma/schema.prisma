@@ -19,6 +19,7 @@ model publication {
   title       String?
   publishedAt DateTime @map("published_at")
   url         String?
+  logourl     String?
   createdAt   DateTime @default(now()) @map("created_at")
 
   @@index([publishedAt(sort: Desc)])

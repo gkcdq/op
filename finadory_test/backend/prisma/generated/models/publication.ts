@@ -36,6 +36,7 @@ export type PublicationMinAggregateOutputType = {
   title: string | null
   publishedAt: Date | null
   url: string | null
+  logourl: string | null
   createdAt: Date | null
 }
 
@@ -51,6 +52,7 @@ export type PublicationMaxAggregateOutputType = {
   title: string | null
   publishedAt: Date | null
   url: string | null
+  logourl: string | null
   createdAt: Date | null
 }
 
@@ -66,6 +68,7 @@ export type PublicationCountAggregateOutputType = {
   title: number
   publishedAt: number
   url: number
+  logourl: number
   createdAt: number
   _all: number
 }
@@ -83,6 +86,7 @@ export type PublicationMinAggregateInputType = {
   title?: true
   publishedAt?: true
   url?: true
+  logourl?: true
   createdAt?: true
 }
 
@@ -98,6 +102,7 @@ export type PublicationMaxAggregateInputType = {
   title?: true
   publishedAt?: true
   url?: true
+  logourl?: true
   createdAt?: true
 }
 
@@ -113,6 +118,7 @@ export type PublicationCountAggregateInputType = {
   title?: true
   publishedAt?: true
   url?: true
+  logourl?: true
   createdAt?: true
   _all?: true
 }
@@ -201,6 +207,7 @@ export type PublicationGroupByOutputType = {
   title: string | null
   publishedAt: Date
   url: string | null
+  logourl: string | null
   createdAt: Date
   _count: PublicationCountAggregateOutputType | null
   _min: PublicationMinAggregateOutputType | null
@@ -237,6 +244,7 @@ export type publicationWhereInput = {
   title?: Prisma.StringNullableFilter<"publication"> | string | null
   publishedAt?: Prisma.DateTimeFilter<"publication"> | Date | string
   url?: Prisma.StringNullableFilter<"publication"> | string | null
+  logourl?: Prisma.StringNullableFilter<"publication"> | string | null
   createdAt?: Prisma.DateTimeFilter<"publication"> | Date | string
 }
 
@@ -252,6 +260,7 @@ export type publicationOrderByWithRelationInput = {
   title?: Prisma.SortOrderInput | Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   url?: Prisma.SortOrderInput | Prisma.SortOrder
+  logourl?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -270,6 +279,7 @@ export type publicationWhereUniqueInput = Prisma.AtLeast<{
   title?: Prisma.StringNullableFilter<"publication"> | string | null
   publishedAt?: Prisma.DateTimeFilter<"publication"> | Date | string
   url?: Prisma.StringNullableFilter<"publication"> | string | null
+  logourl?: Prisma.StringNullableFilter<"publication"> | string | null
   createdAt?: Prisma.DateTimeFilter<"publication"> | Date | string
 }, "id">
 
@@ -285,6 +295,7 @@ export type publicationOrderByWithAggregationInput = {
   title?: Prisma.SortOrderInput | Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   url?: Prisma.SortOrderInput | Prisma.SortOrder
+  logourl?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.publicationCountOrderByAggregateInput
   _max?: Prisma.publicationMaxOrderByAggregateInput
@@ -306,6 +317,7 @@ export type publicationScalarWhereWithAggregatesInput = {
   title?: Prisma.StringNullableWithAggregatesFilter<"publication"> | string | null
   publishedAt?: Prisma.DateTimeWithAggregatesFilter<"publication"> | Date | string
   url?: Prisma.StringNullableWithAggregatesFilter<"publication"> | string | null
+  logourl?: Prisma.StringNullableWithAggregatesFilter<"publication"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"publication"> | Date | string
 }
 
@@ -321,6 +333,7 @@ export type publicationCreateInput = {
   title?: string | null
   publishedAt: Date | string
   url?: string | null
+  logourl?: string | null
   createdAt?: Date | string
 }
 
@@ -336,6 +349,7 @@ export type publicationUncheckedCreateInput = {
   title?: string | null
   publishedAt: Date | string
   url?: string | null
+  logourl?: string | null
   createdAt?: Date | string
 }
 
@@ -351,6 +365,7 @@ export type publicationUpdateInput = {
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logourl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -366,6 +381,7 @@ export type publicationUncheckedUpdateInput = {
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logourl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -381,6 +397,7 @@ export type publicationCreateManyInput = {
   title?: string | null
   publishedAt: Date | string
   url?: string | null
+  logourl?: string | null
   createdAt?: Date | string
 }
 
@@ -396,6 +413,7 @@ export type publicationUpdateManyMutationInput = {
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logourl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -411,6 +429,7 @@ export type publicationUncheckedUpdateManyInput = {
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   publishedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logourl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -426,6 +445,7 @@ export type publicationCountOrderByAggregateInput = {
   title?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   url?: Prisma.SortOrder
+  logourl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -441,6 +461,7 @@ export type publicationMaxOrderByAggregateInput = {
   title?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   url?: Prisma.SortOrder
+  logourl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -456,6 +477,7 @@ export type publicationMinOrderByAggregateInput = {
   title?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   url?: Prisma.SortOrder
+  logourl?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -489,6 +511,7 @@ export type publicationSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   title?: boolean
   publishedAt?: boolean
   url?: boolean
+  logourl?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["publication"]>
 
@@ -504,6 +527,7 @@ export type publicationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   title?: boolean
   publishedAt?: boolean
   url?: boolean
+  logourl?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["publication"]>
 
@@ -519,6 +543,7 @@ export type publicationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   title?: boolean
   publishedAt?: boolean
   url?: boolean
+  logourl?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["publication"]>
 
@@ -534,10 +559,11 @@ export type publicationSelectScalar = {
   title?: boolean
   publishedAt?: boolean
   url?: boolean
+  logourl?: boolean
   createdAt?: boolean
 }
 
-export type publicationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuer" | "isin" | "cac40" | "type" | "subtype" | "status" | "relatedTo" | "title" | "publishedAt" | "url" | "createdAt", ExtArgs["result"]["publication"]>
+export type publicationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "issuer" | "isin" | "cac40" | "type" | "subtype" | "status" | "relatedTo" | "title" | "publishedAt" | "url" | "logourl" | "createdAt", ExtArgs["result"]["publication"]>
 
 export type $publicationPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "publication"
@@ -554,6 +580,7 @@ export type $publicationPayload<ExtArgs extends runtime.Types.Extensions.Interna
     title: string | null
     publishedAt: Date
     url: string | null
+    logourl: string | null
     createdAt: Date
   }, ExtArgs["result"]["publication"]>
   composites: {}
@@ -989,6 +1016,7 @@ export interface publicationFieldRefs {
   readonly title: Prisma.FieldRef<"publication", 'String'>
   readonly publishedAt: Prisma.FieldRef<"publication", 'DateTime'>
   readonly url: Prisma.FieldRef<"publication", 'String'>
+  readonly logourl: Prisma.FieldRef<"publication", 'String'>
   readonly createdAt: Prisma.FieldRef<"publication", 'DateTime'>
 }
     

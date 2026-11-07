@@ -1,4 +1,10 @@
-# Finadory - Veille Financière & IA
+# Bergdot - Veille Financière & IA
+
+**🔗 Liens du projet :**
+- **URL de l'application déployée :** [https://ton-domaine.trycloudflare.com](https://ton-domaine.trycloudflare.com) *(à remplacer par ton lien Cloudflare)*
+- **Lien du repo GitHub :** [https://github.com/ton-pseudo/bergdot](https://github.com/ton-pseudo/bergdot) *(à remplacer par ton lien)*
+
+---
 
 ## Objectif du projet
 Construire une petite web application qui récupère les publications réglementées des sociétés cotées (via l'API open data InfoFinancière de l'AMF) et en tire des brèves d'actualité fiables.
@@ -31,12 +37,14 @@ Construire une petite web application qui récupère les publications réglement
 - **Modèle** : `ministral-8b-latest` (suffisant, très rapide et inclus dans le plan gratuit).
 - **Format** : Utilisation du `responseFormat: { type: "json_object" }` pour garantir une sortie structurée.
 
-### Frontend : React (Vite) + Axios
+### Frontend : React (Vite) + Axios + Framer Motion
 - **React 18** avec Vite pour la rapidité de développement.
 - **Axios** pour les appels API.
+- **Framer Motion** pour les animations fluides (apparition en cascade des cartes, transitions de vues).
 - **CSS pur** (sans framework) pour un contrôle total sur le design "Terminal" (couleurs, polices IBM Plex Mono, effets de bordure).
 - **Design** : Interface inspirée des terminaux Bloomberg, avec un écran d'accueil, une banderole de données défilante, une grille de cartes et une vue détaillée par entreprise.
 - **UX** : Skeleton Loader (effet de chargement), barre de recherche temps réel, et tableau structuré pour les données financières.
+- **Logos** : Intégration des logos d'entreprises via le CDN de **Logo.dev** (recherche par nom nettoyé, avec fallback sur les initiales).
 
 ---
 
