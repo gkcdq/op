@@ -36,11 +36,14 @@ Construire une petite web application qui récupère les publications réglement
 - **Axios** pour les appels API.
 - **CSS pur** (sans framework) pour un contrôle total sur le design "Terminal" (couleurs, polices IBM Plex Mono, effets de bordure).
 - **Design** : Interface inspirée des terminaux Bloomberg, avec un écran d'accueil, une banderole de données défilante, une grille de cartes et une vue détaillée par entreprise.
+- **UX** : Skeleton Loader (effet de chargement), barre de recherche temps réel, et tableau structuré pour les données financières.
 
+---
 
-## Deploiement 
-- **Local** : deploiement sur server local.
-- **Cloudflare** : Deploiement gratuit (hors prix du domaine) par les tunnels cloudflare
+## Déploiement 
+- **Local** : Déploiement sur serveur local.
+- **Cloudflare** : Déploiement gratuit (hors prix du domaine) via les tunnels Cloudflare.
+
 ---
 
 ## Compréhension de la structure des données
@@ -100,23 +103,23 @@ Elle est simple, rapide, et permet de détecter les vraies hallucinations. Elle 
 ### 1. Prompt de contexte
 > "Tu es un journaliste financier. À partir du texte ci-dessous, rédige une brève de 100 à 150 mots en français."
 
-### 2. Prompt de consigne
+### 2. Prompt de consigne (Formatage strict et structuré)
 > Attention, tu dois impérativement respecter ce format JSON, sans rien ajouter d'autre :
->         {
->             "societe": "${pub.societe || 'Inconnue'}",
->             "titre": "Un titre percutant",
->             "breve": "Le texte de la brève...",
->             "chiffres_cles": [
->                 { "label": "Chiffre d'affaires", "valeur": "492,8 M€" },
->                 { "label": "Croissance", "valeur": "+11,3%" }
->             ]
->         }
->         
->         Règles STRICTES :
->         1. Le champ "chiffres_cles" doit être un tableau d'objets.
->         2. Pour le champ "valeur", tu dois COPIER-COLLER le chiffre EXACTEMENT tel qu'il apparaît dans le texte source (avec la même devise, les mêmes virgules, les mêmes espaces). Ne reformate pas le chiffre.
->         3. Le champ "label" doit être une description courte et claire (ex: "Chiffre d'affaires", "Marge", "Dette nette").
->         4. N'invente aucun chiffre. Si tu ne trouves pas de chiffres, renvoie un tableau .vide [].
+> ```json
+> {
+>     "societe": "Nom",
+>     "titre": "Un titre percutant",
+>     "breve": "Le texte de la brève...",
+>     "chiffres_cles": [
+>         { "label": "Chiffre d'affaires", "valeur": "492,8 M€" },
+>         { "label": "Croissance", "valeur": "+11,3%" }
+>     ]
+> }
+> ```
+> Règles STRICTES :
+> 1. Le champ "chiffres_cles" doit être un tableau d'objets avec un "label" (ex: "Marge") et une "valeur".
+> 2. Pour le champ "valeur", tu dois COPIER-COLLER le chiffre EXACTEMENT tel qu'il apparaît dans le texte source. Ne reformate pas le chiffre.
+> 3. N'invente aucun chiffre. Si tu ne trouves pas de chiffres, renvoie un tableau vide [].
 
 ### 3. Prompt de contexte applicatif
 > "Texte source : ${pdf.texte}"
@@ -131,41 +134,45 @@ Lors des tests, le LLM a généré une brève pour **ENGIE** en utilisant des ch
 L'utilisation d'un LLM (Mistral) représente un coût par token. Pour rendre l'application viable en production, plusieurs stratégies d'optimisation ont été mises en place :
 
 ### 1. Filtrage strict en amont (Éviter les appels inutiles)
-Plutôt que d'envoyer tous les PDFs au LLM, un algorithme de scoring (dans `pertinence.ts`) sélectionne uniquement les **5 publications les plus pertinentes** sur une période de 3 jours. Sur les x publications récupérées, seules 5 sont analysées, réduisant drastiquement le volume de tokens consommés.
+Plutôt que d'envoyer tous les PDFs au LLM, un algorithme de scoring (dans `pertinence.ts`) sélectionne uniquement les **5 publications les plus pertinentes** sur une période de 3 jours. Sur les 392 publications récupérées, seules 5 sont analysées, réduisant drastiquement le volume de tokens consommés.
 
 ### 2. Troncature intelligente du texte source (`TEXTE_MAX`)
 Les communiqués financiers peuvent faire plusieurs dizaines de pages. Envoyer tout le texte au LLM exploserait la facture (et dépasserait sa fenêtre de contexte). 
-- Le fichier `pdfToText.ts` extrait uniquement les **1 500 à 3 000 premiers caractères max** (l'équivalent des 2 premières pages).
+- Le fichier `pdfToText.ts` extrait uniquement les **3 000 premiers caractères max** (l'équivalent des 2 premières pages).
 - C'est dans ces premières pages que se trouvent le titre, les faits marquants et les chiffres clés (le reste étant souvent des mentions légales ou des tableaux détaillés).
-- Cette troncature permet de garder l'essentiel du contexte tout en divisant le coût par 1 car un pdf peut contenir entre 30k et 40k char.
+- Cette troncature permet de garder l'essentiel du contexte tout en divisant le coût par 10 à 15 (un PDF complet pouvant contenir entre 30k et 40k caractères).
 
 ### 3. Système de cache et d'idempotence (Zéro double dépense)
 - **Vérification préalable (`findUnique`)** : Avant de télécharger un PDF et d'appeler Mistral, le service `BriefService` vérifie si une brève n'a pas déjà été générée pour cette publication. Si c'est le cas, il ignore le processus. 
 - **Cycle de rafraîchissement** : L'application tourne en boucle toutes les 30 minutes pour vérifier les nouvelles publications. Grâce au cache en base de données, les publications déjà traitées ne sont **jamais** renvoyées au LLM.
-- **Résultat** : Le serveur peut redémarrer ou tourner pendant des jours (normalement les donnees sont actualiser tous les jours d'apres l'api info financiere mais bon on ne sait jamais) sans jamais payer deux fois le même appel API.
+- **Résultat** : Le serveur peut redémarrer ou tourner pendant des jours sans jamais payer deux fois le même appel API.
 
 ### 4. Format de sortie contraint (JSON `responseFormat`)
 L'utilisation du `responseFormat: { type: "json_object" }` évite au LLM de générer des phrases d'introduction inutiles (ex: "Voici la brève..."). Le modèle génère directement le JSON, ce qui économise les tokens de sortie et garantit un parsing sans erreur.
 
-### 5. Limitation de la charge côté frontend
+### 5. Limitation de la charge côté frontend (Polling)
 Le frontend interroge le backend toutes les 60 secondes (`setInterval`), mais celui-ci puise dans un **cache en mémoire** (mis à jour par le Cron). Cela évite de surcharger la base de données et garantit une latence quasi nulle pour l'utilisateur.
+
+### 6. Monitoring des performances
+Des chronomètres ont été ajoutés dans le service `BriefService` pour mesurer le temps exact passé sur l'extraction du PDF (`timePdf`) versus l'appel au LLM (`timeLlm`). Ces logs (ex: `📊 [PERF] ENGIE : PDF 120ms | LLM 3400ms`) permettent d'identifier rapidement les goulots d'étranglement.
 
 ---
 
 ## Idées d'amélioration
 - **Contexte sémantique** : Implémenter un second agent pour vérifier non seulement la présence du chiffre, mais aussi son contexte (ex: "11,3%" doit être associé à "chiffre d'affaires").
 - **Cache intelligent** : Mettre en place un cache Redis pour éviter de retélécharger les PDFs déjà analysés.
-- **Tests unitaires** : Ajouter des tests pour valider la normalisation des chiffres et le scoring.
-- **Déploiement** : Déployer la base de données sur un serveur local conteneurisé sur Docker. *(J'aurais pu le faire sur un vrai projet, mais pour un exercice, Supabase ou Neon (autre cloud db utilisé côté dev sur des projets persos) sont très bien).*
-- **Domaine** : acheter un nom de domaine coherent avec le site :).
-- **Si grand traffique** : augmenter le temps entre les requetes utilisateurs 2 min pour soulager le server par deux pour un utilisateur voir plus, comme ce sont des donnees peu souvent raffraichi 1 min est tres aggressif.
+- **Tests unitaires** : Ajouter des tests avec Jest pour valider la normalisation des chiffres et le scoring.
+- **Déploiement** : Déployer la base de données sur un serveur local conteneurisé sur Docker. *(J'aurais pu le faire sur un vrai projet, mais pour un exercice, Supabase ou Neon sont très bien).*
+- **Domaine** : Acheter un nom de domaine cohérent avec le site (ex: bergdot.com).
+- **Scalabilité** : Si le trafic augmente, augmenter le temps entre les requêtes du frontend à 2 minutes. Comme les données sont peu souvent rafraîchies, un polling de 1 minute est très agressif pour le serveur.
+
 ---
 
 ## Temps réellement passé
 - **Analyse de l'API et développement du backend** (ingestion, scoring) : 15 minutes *(Claude a aidé pour comprendre rapidement les retours des curl successifs)*
 - **Développement de l'extraction PDF et du service LLM** : ~1 heure 30 mins
 - **Intégration du cache et du contrôle de vérification** : ~1 heure
-- **Développement du frontend (React, design terminal)** : ~1 heure
-- **Rédaction du README et tests finaux** : ~1 heure 10 mins *(ecrit a la main pour ne rien oublie + IA pour le rendre plus digeste à lire)*
+- **Développement du frontend (React, design terminal, skeleton loader, recherche)** : ~1 heure
+- **Rédaction du README et tests finaux** : ~1 heure 10 mins *(écrit + IA pour le rendre plus digeste à lire)*
 
 **Total : ~6 heures 30**

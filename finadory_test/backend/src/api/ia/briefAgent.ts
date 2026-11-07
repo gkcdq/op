@@ -27,6 +27,7 @@ export class BriefService
         const url = pub.url;
         if (!url) return null;
 
+        const startTime = Date.now();
         this.logger.log(`Vérification de l'existence de la brève pour ${pub.societe}...`);
         const brèveExistante = await this.prisma.llmVerification.findUnique({
             where: {
@@ -41,10 +42,10 @@ export class BriefService
 
         if (brèveExistante)
         {
-            this.logger.log(`Brève déjà existante en base pour ${pub.societe}. Processus ignoré.`);
+            this.logger.log(`⏩ Brève déjà existante en base pour ${pub.societe}. Processus ignoré.`);
             return brèveExistante; 
         }
-
+        const startPdf = Date.now(); 
         this.logger.log(`Extraction du PDF pour ${pub.societe}...`);
         const pdf = await extraireTextePdf(url);
         
@@ -52,7 +53,8 @@ export class BriefService
             this.logger.warn(`PDF illisible pour ${pub.id} : ${pdf.erreur}`);
             return;
         }
-
+        const timePdf = Date.now() - startPdf; 
+        const startLlm = Date.now(); 
         this.logger.log(`Appel du LLM Mistral pour ${pub.societe}...`);
         
         const prompt = `Tu es un journaliste financier. À partir du texte ci-dessous, rédige une brève de 100 à 150 mots en français.
@@ -83,6 +85,8 @@ export class BriefService
                 messages: [{ role: "user", content: prompt }],
                 responseFormat: { type: "json_object" },
             });
+            
+            const timeLlm = Date.now() - startLlm; // ⏱️ Fin chrono LLM
 
             const content = chatResponse.choices[0].message.content;
             const json = typeof content === 'string' ? JSON.parse(content) : content;
@@ -91,15 +95,15 @@ export class BriefService
                 json.societe = pub.societe;
             }
 
+            // 4. VÉRIFICATION DES CHIFFRES
             const texteVerifNettoye = nettoyerChiffre(pdf.texteVerification);
             let status = 'OK';
             let erreurLog = null;
             const chiffresIntrouvables = [];
 
-            // ✅ BOUCLE CORRIGÉE
             for (const item of json.chiffres_cles || [])
             {
-                const chiffre = item.valeur; // On extrait la valeur (ex: "492,8 M€")
+                const chiffre = item.valeur; 
                 const chiffreNettoye = nettoyerChiffre(chiffre);
                 const trouve = texteVerifNettoye.includes(chiffreNettoye) || 
                                pdf.texteVerification.includes(chiffre);
@@ -115,6 +119,7 @@ export class BriefService
                 this.logger.warn(erreurLog);
             }
 
+            // 5. SAUVEGARDE EN BASE
             await this.prisma.llmVerification.upsert({
                 where: {
                     cle_unique: {
@@ -141,13 +146,18 @@ export class BriefService
                 }
             });
 
+            // ⏱️ Fin du chrono global et affichage des performances
+            const timeTotal = Date.now() - startTime;
             this.logger.log(`✅ Brève sauvegardée pour ${pub.societe} (Statut: ${status})`);
+            this.logger.log(`📊 [PERF] ${pub.societe} : PDF ${timePdf}ms | LLM ${timeLlm}ms | Total ${timeTotal}ms`);
+
             return json;
 
         }
         catch (error)
         {
-            this.logger.error("Erreur lors de l'appel à Mistral", error);
+            this.logger.error(`Erreur lors de l'appel à Mistral pour ${pub.societe}`, error);
+            return null;
         }
     }
 }

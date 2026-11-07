@@ -40,4 +40,14 @@ export class ScriptCache implements OnApplicationBootstrap
     }
 
     getBriefs(){return this.brief;}
+
+    getFilteredBriefs(search?: string) {
+        if (!search) return this.brief;
+
+        const query = search.toLowerCase();
+        return this.brief.filter(b => 
+            (b.briefJson.societe && b.briefJson.societe.toLowerCase().includes(query)) ||
+            (b.briefJson.titre && b.briefJson.titre.toLowerCase().includes(query))
+        );
+    }
 }

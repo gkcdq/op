@@ -44,6 +44,13 @@ let ScriptCache = ScriptCache_1 = class ScriptCache {
         }
     }
     getBriefs() { return this.brief; }
+    getFilteredBriefs(search) {
+        if (!search)
+            return this.brief;
+        const query = search.toLowerCase();
+        return this.brief.filter(b => (b.briefJson.societe && b.briefJson.societe.toLowerCase().includes(query)) ||
+            (b.briefJson.titre && b.briefJson.titre.toLowerCase().includes(query)));
+    }
 };
 exports.ScriptCache = ScriptCache;
 __decorate([

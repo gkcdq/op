@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion' // <-- Import de Framer Motion
 import './App.css'
 import { fetchBriefs } from './api/datagouv/briefs'
 
@@ -15,6 +16,20 @@ const MARKETS = [
 
 const fmt = (n) => n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
+// --- VARIANTES D'ANIMATION ---
+const gridVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 } // Les cartes apparaissent l'une après l'autre
+  }
+}
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+}
+
 function Clock() {
   const [now, setNow] = useState(new Date())
   useEffect(() => {
@@ -24,38 +39,84 @@ function Clock() {
   return <span className="hdr-clock">{now.toLocaleTimeString('fr-FR')}</span>
 }
 
+// --- COMPOSANT SKELETON LOADER ---
+function SkeletonLoader() {
+  return (
+    <div className="grid">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className="skeleton-card">
+          <div className="skeleton-line skeleton-short"></div>
+          <div className="skeleton-line skeleton-title"></div>
+          <div className="skeleton-line skeleton-text"></div>
+          <div className="skeleton-line skeleton-text"></div>
+          <div className="skeleton-line skeleton-text short"></div>
+          <div className="skeleton-tags">
+            <div className="skeleton-tag"></div>
+            <div className="skeleton-tag"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function App() {
   const [isStarted, setIsStarted] = useState(false)
   const [briefs, setBriefs] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedBrief, setSelectedBrief] = useState(null)
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     const loadBriefs = async () => {
       try {
-        const data = await fetchBriefs()
+        const data = await fetchBriefs(search) 
         setBriefs(data)
       } catch (err) {
         console.error("Erreur:", err)
       } finally {
-        setLoading(false)
+        setTimeout(() => setLoading(false), 500)
       }
     }
+    
+    if (briefs.length === 0) setLoading(true)
+    
     loadBriefs()
-    // Rafraîchissement toutes les 60 secondes (polling)
     const interval = setInterval(loadBriefs, 60000)
     return () => clearInterval(interval)
-  }, [])
+  }, [search])
 
   const ticks = [...MARKETS, ...MARKETS]
 
   return (
     <>
-      {/* ÉCRAN D'ACCUEIL */}
-      <div className={`splash ${isStarted ? 'hidden' : ''}`} onClick={() => setIsStarted(true)}>
-        <h1>Bergdot</h1>
-        <p>[ Cliquez pour accéder au terminal ]</p>
-      </div>
+      {/* ÉCRAN D'ACCUEIL ANIMÉ */}
+      <AnimatePresence>
+        {!isStarted && (
+          <motion.div 
+            className="splash"
+            onClick={() => setIsStarted(true)}
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }} // Disparition cinématique
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+          >
+            <motion.h1
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              Bergdot
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            >
+              [ Cliquez pour accéder au terminal ]
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* HEADER */}
       <header className="hdr">
@@ -69,7 +130,7 @@ function App() {
           {ticks.map((m, i) => (
             <span className="tick" key={i}>
               <b>{m.s}</b>{fmt(m.last)}{' '}
-              <span style={{ color: m.pct >= 0 ? 'var(--up)' : 'var(--down)' }}>
+              <span className={m.pct >= 0 ? 'up' : 'down'}>
                 {m.pct >= 0 ? '▲' : '▼'} {Math.abs(m.pct).toFixed(2)}%
               </span>
             </span>
@@ -79,145 +140,166 @@ function App() {
 
       {/* CONTENU PRINCIPAL */}
       <main className="main">
-        {loading ? (
-          <div style={{ textAlign: 'center', color: 'var(--amber)', marginTop: '3rem' }}>
-            Chargement des données...
-          </div>
-        ) : selectedBrief ? (
-          
-          /* VUE DÉTAILLÉE */
-          <div className="detail">
-            <div className="detail-header">
-              <div>
-                <span className="detail-societe">{selectedBrief.briefJson.societe || 'N/A'}</span>
-                <h2 className="detail-title">{selectedBrief.briefJson.titre}</h2>
-              </div>
-              <span style={{ 
-                padding: '0.4rem 0.8rem', 
-                border: `1px solid ${selectedBrief.status === 'OK' ? 'var(--up)' : 'var(--amber)'}`,
-                color: selectedBrief.status === 'OK' ? 'var(--up)' : 'var(--amber)',
-                fontSize: '0.8rem', borderRadius: '3px',
-                whiteSpace: 'nowrap'
-              }}>
-                {selectedBrief.status === 'OK' ? 'VÉRIFIÉ' : 'PARTIEL'}
-              </span>
-            </div>
-            
-            <p className="detail-content">{selectedBrief.briefJson.breve}</p>
-            
-            {/* TABLEAU DES CHIFFRES CLÉS */}
-            {selectedBrief.briefJson.chiffres_cles && selectedBrief.briefJson.chiffres_cles.length > 0 && (
-              <div style={{ marginBottom: '2rem' }}>
-                <h4 style={{ color: 'var(--dim)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>
-                  Données financières extraites
-                </h4>
-                
-                <div style={{ border: '1px solid var(--line)', borderRadius: '4px', overflow: 'hidden' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                    <thead>
-                      <tr style={{ background: '#111', borderBottom: '1px solid var(--line)' }}>
-                        <th style={{ textAlign: 'left', padding: '0.75rem 1rem', color: 'var(--dim)', fontWeight: 500, width: '40%' }}>Indicateur</th>
-                        <th style={{ textAlign: 'right', padding: '0.75rem 1rem', color: 'var(--dim)', fontWeight: 500 }}>Valeur</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedBrief.briefJson.chiffres_cles.map((c, i) => (
-                        <tr key={i} style={{ borderBottom: i < selectedBrief.briefJson.chiffres_cles.length - 1 ? '1px solid #1a1a1a' : 'none' }}>
-                          <td style={{ padding: '0.75rem 1rem', color: 'var(--text)' }}>
-                            {c.label || 'Donnée'}
-                          </td>
-                          <td style={{ padding: '0.75rem 1rem', textAlign: 'right', color: 'var(--amber)', fontWeight: 600, fontFamily: 'var(--mono)' }}>
-                            {c.valeur || c}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+        {/* BARRE DE RECHERCHE */}
+        <AnimatePresence>
+          {!selectedBrief && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'center' }}
+            >
+              <input 
+                type="text" 
+                className="search-input"
+                placeholder="Rechercher une société ou un titre..." 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-                {/* Alerte visuelle si le statut n'est pas OK */}
-                {selectedBrief.status !== 'OK' && (
-                  <div style={{ 
-                    marginTop: '1rem', 
-                    padding: '0.75rem', 
-                    background: 'rgba(255, 159, 28, 0.1)', 
-                    border: '1px solid rgba(255, 159, 28, 0.3)',
-                    borderRadius: '4px',
-                    color: 'var(--amber)',
-                    fontSize: '0.8rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
+        {loading ? (
+          <SkeletonLoader />
+        ) : (
+          <AnimatePresence mode="wait">
+            {selectedBrief ? (
+              /* VUE DÉTAILLÉE ANIMÉE */
+              <motion.div 
+                key="detail"
+                className="detail"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="detail-header">
+                  <div>
+                    <span className="detail-societe">{selectedBrief.briefJson.societe || 'N/A'}</span>
+                    <h2 className="detail-title">{selectedBrief.briefJson.titre}</h2>
+                  </div>
+                  <span style={{ 
+                    padding: '0.4rem 0.8rem', 
+                    border: `1px solid ${selectedBrief.status === 'OK' ? 'var(--up)' : 'var(--amber)'}`,
+                    color: selectedBrief.status === 'OK' ? 'var(--up)' : 'var(--amber)',
+                    fontSize: '0.8rem', borderRadius: '3px',
+                    whiteSpace: 'nowrap'
                   }}>
-                    <span>⚠️</span>
-                    <span>Certains chiffres n'ont pas pu être vérifiés dans le document source (voir détail ci-dessous).</span>
+                    {selectedBrief.status === 'OK' ? 'VÉRIFIÉ' : 'PARTIEL'}
+                  </span>
+                </div>
+                
+                <p className="detail-content">{selectedBrief.briefJson.breve}</p>
+                
+                {/* TABLEAU DES CHIFFRES CLÉS */}
+                {selectedBrief.briefJson.chiffres_cles && selectedBrief.briefJson.chiffres_cles.length > 0 && (
+                  <div style={{ marginBottom: '2rem' }}>
+                    <h4 style={{ color: 'var(--dim)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>
+                      Données financières extraites
+                    </h4>
+                    
+                    <div className="table-wrap">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th style={{ width: '40%' }}>Indicateur</th>
+                            <th>Valeur</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedBrief.briefJson.chiffres_cles.map((c, i) => (
+                            <tr key={i}>
+                              <td>{c.label || 'Donnée'}</td>
+                              <td>{c.valeur || c}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {selectedBrief.status !== 'OK' && (
+                      <div style={{ 
+                        marginTop: '1rem', padding: '0.75rem', 
+                        background: 'rgba(255, 159, 28, 0.1)', border: '1px solid rgba(255, 159, 28, 0.3)',
+                        borderRadius: '4px', color: 'var(--amber)', fontSize: '0.8rem',
+                        display: 'flex', alignItems: 'center', gap: '0.5rem'
+                      }}>
+                        <span>⚠️</span>
+                        <span>Certains chiffres n'ont pas pu être vérifiés dans le document source.</span>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            )}
 
-            {/* DÉTAIL DE L'ERREUR */}
-            {selectedBrief.error && (
-              <div style={{ 
-                background: 'rgba(255,64,64,0.1)', 
-                color: 'var(--down)', 
-                padding: '1rem', 
-                marginBottom: '1rem', 
-                fontSize: '0.85rem', 
-                borderLeft: '3px solid var(--down)' 
-              }}>
-                ⚠️ Détail de la vérification : {selectedBrief.error}
-              </div>
-            )}
+                {selectedBrief.error && (
+                  <div style={{ 
+                    background: 'rgba(255,64,64,0.1)', color: 'var(--down)', 
+                    padding: '1rem', marginBottom: '1rem', fontSize: '0.85rem', 
+                    borderLeft: '3px solid var(--down)' 
+                  }}>
+                    ⚠️ Détail de la vérification : {selectedBrief.error}
+                  </div>
+                )}
 
-            <div className="detail-actions">
-              <button className="btn" onClick={() => setSelectedBrief(null)}>
-                ← Retour au terminal
-              </button>
-              <a href={selectedBrief.documentUrl} target="_blank" rel="noreferrer" className="btn btn-primary" style={{ textDecoration: 'none' }}>
-                Consulter le PDF source ↗
-              </a>
-            </div>
-          </div>
-
-        ) : (
-          
-          /* GRILLE PRINCIPALE */
-          <div className="grid">
-            {briefs.map((b) => (
-              <div key={b.id} className="card" onClick={() => setSelectedBrief(b)}>
-                <div className="card-societe">{b.briefJson.societe || 'Inconnue'}</div>
-                <h3>{b.briefJson.titre}</h3>
-                <div className="card-excerpt">{b.briefJson.breve}</div>
-                
-                {/* TAGS DES CHIFFRES SUR LA CARTE */}
-                <div style={{ marginTop: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  {b.briefJson.chiffres_cles?.slice(0, 2).map((c, i) => (
-                    <span key={i} style={{ 
-                      fontSize: '0.7rem', 
-                      padding: '0.2rem 0.5rem', 
-                      background: '#151515', 
-                      border: '1px solid #2a2a2a',
-                      color: 'var(--dim)',
-                      borderRadius: '2px'
-                    }}>
-                      {c.label}: <strong style={{ color: 'var(--text)' }}>{c.valeur}</strong>
-                    </span>
-                  ))}
-                  {b.briefJson.chiffres_cles?.length > 2 && (
-                    <span style={{ color: 'var(--dim)', fontSize: '0.7rem', alignSelf: 'center' }}>
-                      +{b.briefJson.chiffres_cles.length - 2} autres
-                    </span>
-                  )}
+                <div className="detail-actions">
+                  <button className="btn" onClick={() => setSelectedBrief(null)}>
+                    ← Retour au terminal
+                  </button>
+                  <a href={selectedBrief.documentUrl} target="_blank" rel="noreferrer" className="btn btn-primary" style={{ textDecoration: 'none' }}>
+                    Consulter le PDF source ↗
+                  </a>
                 </div>
-              </div>
-            ))}
-            {briefs.length === 0 && (
-              <div style={{ color: 'var(--dim)', gridColumn: '1 / -1', textAlign: 'center', marginTop: '3rem' }}>
-                Aucune dépêche disponible pour le moment.
-              </div>
+              </motion.div>
+            ) : (
+              /* GRILLE PRINCIPALE ANIMÉE */
+              <motion.div 
+                key="grid"
+                className="grid"
+                variants={gridVariants}
+                initial="hidden"
+                animate="show"
+                exit={{ opacity: 0, x: -20 }}
+              >
+                {briefs.map((b) => (
+                  <motion.div 
+                    key={b.id} 
+                    className="card" 
+                    onClick={() => setSelectedBrief(b)}
+                    variants={cardVariants}
+                    whileHover={{ scale: 1.02, y: -4 }} // Micro-interaction au survol
+                    whileTap={{ scale: 0.98 }}        // Micro-interaction au clic
+                  >
+                    <div className="card-societe">{b.briefJson.societe || 'Inconnue'}</div>
+                    <h3>{b.briefJson.titre}</h3>
+                    <div className="card-excerpt">{b.briefJson.breve}</div>
+                    
+                    <div style={{ marginTop: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      {b.briefJson.chiffres_cles?.slice(0, 2).map((c, i) => (
+                        <span key={i} style={{ 
+                          fontSize: '0.7rem', padding: '0.2rem 0.5rem', 
+                          background: '#151515', border: '1px solid #2a2a2a',
+                          color: 'var(--dim)', borderRadius: '2px'
+                        }}>
+                          {c.label}: <strong style={{ color: 'var(--text)' }}>{c.valeur}</strong>
+                        </span>
+                      ))}
+                      {b.briefJson.chiffres_cles?.length > 2 && (
+                        <span style={{ color: 'var(--dim)', fontSize: '0.7rem', alignSelf: 'center' }}>
+                          +{b.briefJson.chiffres_cles.length - 2} autres
+                        </span>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+                {briefs.length === 0 && !loading && (
+                  <div style={{ color: 'var(--dim)', gridColumn: '1 / -1', textAlign: 'center', marginTop: '3rem' }}>
+                    Aucune dépêche trouvée.
+                  </div>
+                )}
+              </motion.div>
             )}
-          </div>
+          </AnimatePresence>
         )}
       </main>
     </>

@@ -1,16 +1,6 @@
-import {Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { DatagouvIngestService } from './script/datagouv/Datagouv.service';
-import { ScriptCache } from './script/scriptCache.js';
-
-// function toInt(value: string | undefined, name: string): number | undefined
-// {
-//   if (value === undefined || value === '')
-//     return undefined;
-//   const n = Number(value);
-//   if (!Number.isInteger(n))
-//     throw new BadRequestException(`"${name}" doit être un entier`);
-//   return n;
-// }
+import { ScriptCache } from './script/scriptCache';
 
 @Controller()
 export class AppController
@@ -24,8 +14,8 @@ export class AppController
   }
 
   @Get('brief')
-  brief()
+  brief(@Query('search') search?: string)
   {
-    return this.scriptCache.getBriefs();
+    return this.scriptCache.getFilteredBriefs(search);
   }
 }

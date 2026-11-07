@@ -8,4 +8,5 @@ export declare class ScriptCache implements OnApplicationBootstrap {
     onApplicationBootstrap(): Promise<void>;
     refreshCache(): Promise<void>;
     getBriefs(): any[];
+    getFilteredBriefs(search?: string): any[];
 }
