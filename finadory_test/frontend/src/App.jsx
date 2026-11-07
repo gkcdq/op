@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion' // <-- Import de Framer Motion
+import { motion, AnimatePresence } from 'framer-motion'
 import './App.css'
 import { fetchBriefs } from './api/datagouv/briefs'
+import CompanyLogo from './components/CompanyLogo.tsx'
 
 const MARKETS = [
   { s: 'CAC 40', last: 8124.35, chg: 41.2, pct: 0.51 },
@@ -16,13 +17,9 @@ const MARKETS = [
 
 const fmt = (n) => n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-// --- VARIANTES D'ANIMATION ---
 const gridVariants = {
   hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08 } // Les cartes apparaissent l'une après l'autre
-  }
+  show: { opacity: 1, transition: { staggerChildren: 0.08 } }
 }
 
 const cardVariants = {
@@ -39,7 +36,6 @@ function Clock() {
   return <span className="hdr-clock">{now.toLocaleTimeString('fr-FR')}</span>
 }
 
-// --- COMPOSANT SKELETON LOADER ---
 function SkeletonLoader() {
   return (
     <div className="grid">
@@ -66,14 +62,20 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [selectedBrief, setSelectedBrief] = useState(null)
   const [search, setSearch] = useState('')
+  const [error, setError] = useState(null)
 
   useEffect(() => {
+    let timeoutId;
+    
     const loadBriefs = async () => {
       try {
         const data = await fetchBriefs(search) 
         setBriefs(data)
+        setError(null)
       } catch (err) {
         console.error("Erreur:", err)
+        setError("Impossible de contacter le serveur. Nouvelle tentative...")
+        timeoutId = setTimeout(loadBriefs, 5000);
       } finally {
         setTimeout(() => setLoading(false), 500)
       }
@@ -83,21 +85,24 @@ function App() {
     
     loadBriefs()
     const interval = setInterval(loadBriefs, 60000)
-    return () => clearInterval(interval)
+    
+    return () => {
+      clearInterval(interval)
+      if (timeoutId) clearTimeout(timeoutId)
+    }
   }, [search])
 
   const ticks = [...MARKETS, ...MARKETS]
 
   return (
     <>
-      {/* ÉCRAN D'ACCUEIL ANIMÉ */}
       <AnimatePresence>
         {!isStarted && (
           <motion.div 
             className="splash"
             onClick={() => setIsStarted(true)}
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }} // Disparition cinématique
+            exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }} 
             transition={{ duration: 0.6, ease: "easeInOut" }}
           >
             <motion.h1
@@ -118,13 +123,11 @@ function App() {
         )}
       </AnimatePresence>
 
-      {/* HEADER */}
       <header className="hdr">
         <div className="hdr-logo">BERGDOT TERMINAL</div>
         <Clock />
       </header>
 
-      {/* TICKER */}
       <div className="ticker">
         <div className="ticker-track">
           {ticks.map((m, i) => (
@@ -138,9 +141,7 @@ function App() {
         </div>
       </div>
 
-      {/* CONTENU PRINCIPAL */}
       <main className="main">
-        {/* BARRE DE RECHERCHE */}
         <AnimatePresence>
           {!selectedBrief && (
             <motion.div 
@@ -160,12 +161,26 @@ function App() {
           )}
         </AnimatePresence>
 
+        {error && (
+          <div style={{
+            background: 'rgba(255, 107, 107, 0.1)',
+            border: '1px solid var(--down)',
+            color: 'var(--down)',
+            padding: '1rem',
+            borderRadius: '4px',
+            marginBottom: '1rem',
+            textAlign: 'center',
+            fontSize: '0.9rem'
+          }}>
+            ⚠️ {error}
+          </div>
+        )}
+
         {loading ? (
           <SkeletonLoader />
         ) : (
           <AnimatePresence mode="wait">
             {selectedBrief ? (
-              /* VUE DÉTAILLÉE ANIMÉE */
               <motion.div 
                 key="detail"
                 className="detail"
@@ -175,9 +190,12 @@ function App() {
                 transition={{ duration: 0.3 }}
               >
                 <div className="detail-header">
-                  <div>
-                    <span className="detail-societe">{selectedBrief.briefJson.societe || 'N/A'}</span>
-                    <h2 className="detail-title">{selectedBrief.briefJson.titre}</h2>
+                  <div className="detail-id"> {/* Utilisation de ta classe CSS */}
+                    <CompanyLogo societe={selectedBrief.briefJson.societe} size={48} />
+                    <div>
+                      <span className="detail-societe">{selectedBrief.briefJson.societe || 'N/A'}</span>
+                      <h2 className="detail-title">{selectedBrief.briefJson.titre}</h2>
+                    </div>
                   </div>
                   <span style={{ 
                     padding: '0.4rem 0.8rem', 
@@ -192,7 +210,6 @@ function App() {
                 
                 <p className="detail-content">{selectedBrief.briefJson.breve}</p>
                 
-                {/* TABLEAU DES CHIFFRES CLÉS */}
                 {selectedBrief.briefJson.chiffres_cles && selectedBrief.briefJson.chiffres_cles.length > 0 && (
                   <div style={{ marginBottom: '2rem' }}>
                     <h4 style={{ color: 'var(--dim)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>
@@ -252,7 +269,6 @@ function App() {
                 </div>
               </motion.div>
             ) : (
-              /* GRILLE PRINCIPALE ANIMÉE */
               <motion.div 
                 key="grid"
                 className="grid"
@@ -267,10 +283,13 @@ function App() {
                     className="card" 
                     onClick={() => setSelectedBrief(b)}
                     variants={cardVariants}
-                    whileHover={{ scale: 1.02, y: -4 }} // Micro-interaction au survol
-                    whileTap={{ scale: 0.98 }}        // Micro-interaction au clic
+                    whileHover={{ scale: 1.02, y: -4 }} 
+                    whileTap={{ scale: 0.98 }}        
                   >
-                    <div className="card-societe">{b.briefJson.societe || 'Inconnue'}</div>
+                    <div className="card-head"> {/* Utilisation de ta classe CSS */}
+                      <CompanyLogo societe={b.briefJson.societe} size={24} />
+                      <div className="card-societe">{b.briefJson.societe || 'Inconnue'}</div>
+                    </div>
                     <h3>{b.briefJson.titre}</h3>
                     <div className="card-excerpt">{b.briefJson.breve}</div>
                     
