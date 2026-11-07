@@ -6,11 +6,7 @@ services:
     ports:
       - "3001:3000" 
     environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
-      - INFOFI_BASE_URL=${INFOFI_BASE_URL}
-      - INFOFI_DATASET_ID=${INFOFI_DATASET_ID}
-      - SCRIPT_DATAGOUVE_INFOFINANCIERE=${SCRIPT_DATAGOUVE_INFOFINANCIERE}
+      - ./backend/.env
     restart: unless-stopped
 
   frontend:
