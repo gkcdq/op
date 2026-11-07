@@ -1,7 +1,7 @@
 # Bergdot - Veille Financière & IA
 
 **🔗 Liens du projet :**
-- **URL de l'application déployée :** [https://ton-domaine.trycloudflare.com](https://ton-domaine.trycloudflare.com) *(à remplacer par ton lien Cloudflare)*
+- **URL de l'application déployée :** [https://ton-domaine.trycloudflare.com](https://ton-domaine.trycloudflare.co) *(à remplacer par ton lien Cloudflare)*
 - **Lien du repo GitHub :** [https://github.com/ton-pseudo/bergdot](https://github.com/ton-pseudo/bergdot) *(à remplacer par ton lien)*
 
 ---
@@ -182,5 +182,6 @@ Des chronomètres ont été ajoutés dans le service `BriefService` pour mesurer
 - **Intégration du cache et du contrôle de vérification** : ~1 heure
 - **Développement du frontend (React, design terminal, skeleton loader, recherche)** : ~1 heure
 - **Rédaction du README et tests finaux** : ~1 heure 10 mins *(écrit + IA pour le rendre plus digeste à lire)*
+- **Design frontend** : reflexion ~30 min + ~45 min  
 
-**Total : ~6 heures 30**
+**Total : ~7 heures 45 repartit entre jeudi soir, vendredi soir et samedi aprem du 09/07/2026 au 11/07/2026**
