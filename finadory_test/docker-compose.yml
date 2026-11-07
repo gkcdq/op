@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: finadory-backend
+
+    ports:
+      - "3000:3000" 
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - INFOFI_BASE_URL=${INFOFI_BASE_URL}
+      - INFOFI_DATASET_ID=${INFOFI_DATASET_ID}
+      - SCRIPT_DATAGOUVE_INFOFINANCIERE=${SCRIPT_DATAGOUVE_INFOFINANCIERE}
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: finadory-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3000 
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: finadory-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN} 
+    depends_on:
+      - frontend
+      - backend
