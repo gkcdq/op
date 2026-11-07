@@ -18,5 +18,6 @@ export interface BriefResponse
 
 export const fetchBriefs = async (): Promise<BriefResponse[]> => {
     const response = await api.get<BriefResponse[]>('/brief');
+    console.log( response.data);
     return response.data;
 };

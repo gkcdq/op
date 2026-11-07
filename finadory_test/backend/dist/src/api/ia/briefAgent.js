@@ -63,12 +63,17 @@ let BriefService = BriefService_1 = class BriefService {
             "societe": "${pub.societe || 'Inconnue'}",
             "titre": "Un titre percutant",
             "breve": "Le texte de la brève...",
-            "chiffres_cles": ["11,3%", "492,8 M€", "9,2%"]
+            "chiffres_cles": [
+                { "label": "Chiffre d'affaires", "valeur": "492,8 M€" },
+                { "label": "Croissance", "valeur": "+11,3%" }
+            ]
         }
         
-        Règles :
-        1. Le champ "chiffres_cles" doit être un tableau (array) contenant TOUS les nombres, pourcentages et montants en euros cités dans ta brève.
-        2. N'invente aucun chiffre. Si tu ne trouves pas de chiffres, renvoie un tableau vide [].
+        Règles STRICTES :
+        1. Le champ "chiffres_cles" doit être un tableau d'objets.
+        2. Pour le champ "valeur", tu dois COPIER-COLLER le chiffre EXACTEMENT tel qu'il apparaît dans le texte source (avec la même devise, les mêmes virgules, les mêmes espaces). Ne reformate pas le chiffre.
+        3. Le champ "label" doit être une description courte et claire (ex: "Chiffre d'affaires", "Marge", "Dette nette").
+        4. N'invente aucun chiffre. Si tu ne trouves pas de chiffres, renvoie un tableau vide [].
         
         Texte source :
         ${pdf.texte}`;
@@ -87,12 +92,13 @@ let BriefService = BriefService_1 = class BriefService {
             let status = 'OK';
             let erreurLog = null;
             const chiffresIntrouvables = [];
-            for (const chiffre of json.chiffres_cles || []) {
+            for (const item of json.chiffres_cles || []) {
+                const chiffre = item.valeur;
                 const chiffreNettoye = nettoyerChiffre(chiffre);
                 const trouve = texteVerifNettoye.includes(chiffreNettoye) ||
                     pdf.texteVerification.includes(chiffre);
                 if (!trouve) {
-                    chiffresIntrouvables.push(chiffre);
+                    chiffresIntrouvables.push(`${item.label} (${chiffre})`);
                 }
             }
             if (chiffresIntrouvables.length > 0) {
